@@ -1,0 +1,69 @@
+name: 'Docker Container Action'
+description: 'A reimplementation of docker container action'
+inputs:
+  repository:
+    description: 'The docker image repository'
+    required: true
+  tag:
+    description: 'The docker image tag'
+    required: true
+  dockerfile:
+    description: 'The dockerfile path'
+    required: false
+    default: 'Dockerfile'
+  opts:
+    description: 'The docker run opts'
+    required: false
+  args:
+    description: 'The docker run args'
+    required: false
+  working-directory:
+    description: 'The docker run working directory'
+    required: false
+    default: ${{ github.workspace }}
+  github-server-url:
+    description: 'The GitHub server URL'
+    required: false
+    default: ${{ github.server_url }}
+  docker-registry-url:
+    description: 'The docker registry URL'
+    required: false
+    default: 'https://ghcr.io'
+outputs:
+  output:
+    description: 'The output file of the docker run step'
+    value: ${{ steps.run.outputs.file }}
+runs:
+  using: 'composite'
+  steps:
+    - id: pull
+      env:
+        INPUT_REPOSITORY: ${{ inputs.repository }}
+        INPUT_TAG: ${{ inputs.tag }}
+        INPUT_DOCKER_REGISTRY_URL: ${{ inputs.docker-registry-url }}
+      run: echo "exit=$(docker pull ${INPUT_DOCKER_REGISTRY_URL#http*://}/$INPUT_REPOSITORY:$INPUT_TAG; echo $?)" >> $GITHUB_OUTPUT
+      shell: bash
+    - if: steps.pull.outputs.exit == 1
+      env:
+        INPUT_REPOSITORY: ${{ inputs.repository }}
+        INPUT_TAG: ${{ inputs.tag }}
+        INPUT_DOCKERFILE: ${{ inputs.dockerfile }}
+        INPUT_GITHUB_SERVER_URL: ${{ inputs.github-server-url }}
+        INPUT_DOCKER_REGISTRY_URL: ${{ inputs.docker-registry-url }}
+      run: docker build -t ${INPUT_DOCKER_REGISTRY_URL#http*://}/$INPUT_REPOSITORY:$INPUT_TAG -f $INPUT_DOCKERFILE $INPUT_GITHUB_SERVER_URL/$INPUT_REPOSITORY.git#$INPUT_TAG
+      shell: bash
+    - id: run
+      env:
+        INPUT_REPOSITORY: ${{ inputs.repository }}
+        INPUT_TAG: ${{ inputs.tag }}
+        INPUT_DOCKERFILE: ${{ inputs.dockerfile }}
+        INPUT_OPTS: ${{ inputs.opts }}
+        INPUT_ARGS: ${{ inputs.args }}
+        INPUT_WORKING_DIRECTORY: ${{ inputs.working-directory }}
+        INPUT_GITHUB_SERVER_URL: ${{ inputs.github-server-url }}
+        INPUT_DOCKER_REGISTRY_URL: ${{ inputs.docker-registry-url }}
+      run: |
+        echo "file=$GITHUB_OUTPUT" >> $GITHUB_OUTPUT
+        docker run --workdir "/github/workspace" --rm --env-file <(env | grep -E '^(ACTIONS|GITHUB|INPUT|RUNNER)_') -e HOME -e CI -v "/var/run/docker.sock":"/var/run/docker.sock" -v "/home/runner/work/_temp/_github_home":"/github/home" -v "/home/runner/work/_temp/_github_workflow":"/github/workflow" -v "/home/runner/work/_temp/_runner_file_commands":"/github/file_commands" -v "$GITHUB_WORKSPACE":"/github/workspace" ${{ inputs.opts }} "${INPUT_DOCKER_REGISTRY_URL#http*://}/$INPUT_REPOSITORY:$INPUT_TAG" ${{ inputs.args }}
+      working-directory: ${{ inputs.working-directory }}
+      shell: bash
