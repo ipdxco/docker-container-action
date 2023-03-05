@@ -30,9 +30,9 @@ inputs:
     required: false
     default: 'https://ghcr.io'
 outputs:
-  output:
-    description: 'The output file of the docker run step'
-    value: ${{ steps.run.outputs.file }}
+  outputs:
+    description: 'The outputs of the docker run step in JSON format'
+    value: ${{ toJSON(steps.run.outputs) }}
 runs:
   using: 'composite'
   steps:
@@ -62,8 +62,6 @@ runs:
         INPUT_WORKING_DIRECTORY: ${{ inputs.working-directory }}
         INPUT_GITHUB_SERVER_URL: ${{ inputs.github-server-url }}
         INPUT_DOCKER_REGISTRY_URL: ${{ inputs.docker-registry-url }}
-      run: |
-        echo "file=$GITHUB_OUTPUT" >> $GITHUB_OUTPUT
-        docker run --workdir "/github/workspace" --rm --env-file <(env | grep -E '^(ACTIONS|GITHUB|INPUT|RUNNER)_') -e HOME -e CI -v "/var/run/docker.sock":"/var/run/docker.sock" -v "/home/runner/work/_temp/_github_home":"/github/home" -v "/home/runner/work/_temp/_github_workflow":"/github/workflow" -v "/home/runner/work/_temp/_runner_file_commands":"/github/file_commands" -v "$GITHUB_WORKSPACE":"/github/workspace" ${{ inputs.opts }} "${INPUT_DOCKER_REGISTRY_URL#http*://}/$INPUT_REPOSITORY:$INPUT_TAG" ${{ inputs.args }}
+      run: docker run --workdir "/github/workspace" --rm --env-file <(env | grep -E '^(ACTIONS|GITHUB|INPUT|RUNNER)_') -e HOME -e CI -v "/var/run/docker.sock":"/var/run/docker.sock" -v "/home/runner/work/_temp/_github_home":"/github/home" -v "/home/runner/work/_temp/_github_workflow":"/github/workflow" -v "/home/runner/work/_temp/_runner_file_commands":"/github/file_commands" -v "$GITHUB_WORKSPACE":"/github/workspace" ${{ inputs.opts }} "${INPUT_DOCKER_REGISTRY_URL#http*://}/$INPUT_REPOSITORY:$INPUT_TAG" ${{ inputs.args }}
       working-directory: ${{ inputs.working-directory }}
       shell: bash
