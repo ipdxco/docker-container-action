@@ -2,11 +2,17 @@ name: 'Docker Container Action'
 description: 'A reimplementation of docker container action'
 inputs:
   repository:
-    description: 'The docker image repository'
+    description: 'The GitHub repository name'
     required: true
+  ref:
+    description: 'The GitHub repository ref'
+    required: true
+  image:
+    description: 'The docker image name (defaults to repository)'
+    required: false
   tag:
-    description: 'The docker image tag'
-    required: true
+    description: 'The docker image tag (defaults to ref)'
+    required: false
   dockerfile:
     description: 'The dockerfile path'
     required: false
@@ -38,23 +44,30 @@ runs:
   steps:
     - id: pull
       env:
-        INPUT_REPOSITORY: ${{ inputs.repository }}
-        INPUT_TAG: ${{ inputs.tag }}
-        INPUT_DOCKER_REGISTRY_URL: ${{ inputs.docker-registry-url }}
-      run: echo "exit=$(docker pull ${INPUT_DOCKER_REGISTRY_URL#http*://}/$INPUT_REPOSITORY:$INPUT_TAG; echo $?)" >> $GITHUB_OUTPUT
+        IMAGE: ${{ inputs.image || inputs.repository }}
+        TAG: ${{ inputs.tag || inputs.ref }}
+        DOCKER_REGISTRY_URL: ${{ inputs.docker-registry-url }}
+      run: echo "exit=$(docker pull ${DOCKER_REGISTRY_URL#http*://}/$IMAGE:$TAG; echo $?)" >> $GITHUB_OUTPUT
       shell: bash
     - if: steps.pull.outputs.exit == 1
       env:
-        INPUT_REPOSITORY: ${{ inputs.repository }}
-        INPUT_TAG: ${{ inputs.tag }}
-        INPUT_DOCKERFILE: ${{ inputs.dockerfile }}
-        INPUT_GITHUB_SERVER_URL: ${{ inputs.github-server-url }}
-        INPUT_DOCKER_REGISTRY_URL: ${{ inputs.docker-registry-url }}
-      run: docker build -t ${INPUT_DOCKER_REGISTRY_URL#http*://}/$INPUT_REPOSITORY:$INPUT_TAG -f $INPUT_DOCKERFILE $INPUT_GITHUB_SERVER_URL/$INPUT_REPOSITORY.git#$INPUT_TAG
+        REPOSITORY: ${{ inputs.repository }}
+        REF: ${{ inputs.ref }}
+        IMAGE: ${{ inputs.image || inputs.repository }}
+        TAG: ${{ inputs.tag || inputs.ref }}
+        DOCKERFILE: ${{ inputs.dockerfile }}
+        GITHUB_SERVER_URL: ${{ inputs.github-server-url }}
+        DOCKER_REGISTRY_URL: ${{ inputs.docker-registry-url }}
+      run: docker build -t ${DOCKER_REGISTRY_URL#http*://}/$IMAGE:$TAG -f $DOCKERFILE $GITHUB_SERVER_URL/$REPOSITORY.git#$REF
       shell: bash
     - id: run
       env:
+        DOCKER_REGISTRY_URL: ${{ inputs.docker-registry-url }}
+        IMAGE: ${{ inputs.image || inputs.repository }}
+        TAG: ${{ inputs.tag || inputs.ref }}
         INPUT_REPOSITORY: ${{ inputs.repository }}
+        INPUT_REF: ${{ inputs.ref }}
+        INPUT_IMAGE: ${{ inputs.image }}
         INPUT_TAG: ${{ inputs.tag }}
         INPUT_DOCKERFILE: ${{ inputs.dockerfile }}
         INPUT_OPTS: ${{ inputs.opts }}
@@ -62,6 +75,6 @@ runs:
         INPUT_WORKING_DIRECTORY: ${{ inputs.working-directory }}
         INPUT_GITHUB_SERVER_URL: ${{ inputs.github-server-url }}
         INPUT_DOCKER_REGISTRY_URL: ${{ inputs.docker-registry-url }}
-      run: docker run --workdir "/github/workspace" --rm --env-file <(env | grep -E '^(ACTIONS|GITHUB|INPUT|RUNNER)_') -e HOME -e CI -v "/var/run/docker.sock":"/var/run/docker.sock" -v "/home/runner/work/_temp/_github_home":"/github/home" -v "/home/runner/work/_temp/_github_workflow":"/github/workflow" -v "/home/runner/work/_temp/_runner_file_commands":"/github/file_commands" -v "$GITHUB_WORKSPACE":"/github/workspace" ${{ inputs.opts }} "${INPUT_DOCKER_REGISTRY_URL#http*://}/$INPUT_REPOSITORY:$INPUT_TAG" ${{ inputs.args }}
+      run: docker run --workdir "${PWD/"$GITHUB_WORKSPACE"/"/github/workspace"}" --rm --env-file <(env | grep -E '^(ACTIONS|GITHUB|INPUT|RUNNER)_') -e HOME -e CI -v "/var/run/docker.sock":"/var/run/docker.sock" -v "/home/runner/work/_temp/_github_home":"/github/home" -v "/home/runner/work/_temp/_github_workflow":"/github/workflow" -v "/home/runner/work/_temp/_runner_file_commands":"/github/file_commands" -v "$GITHUB_WORKSPACE":"/github/workspace" ${{ inputs.opts }} "${DOCKER_REGISTRY_URL#http*://}/$IMAGE:$TAG" ${{ inputs.args }}
       working-directory: ${{ inputs.working-directory }}
       shell: bash
