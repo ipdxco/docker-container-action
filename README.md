@@ -2,6 +2,10 @@
 
 Docker Container Action is a GitHub Action that enables you to run Docker containers with custom run options, as well as pull or build images from scratch. This action is intended to address the limitations of GitHub's own [Docker container action](https://docs.github.com/en/actions/creating-actions/creating-a-docker-container-action), which does not allow for custom run options or specify the network the action should run in.
 
+## How to migrate?
+
+See how [jUnit XML to HTML](https://github.com/pl-strflt/junit-xml-to-html/pull/1/files#diff-1243c5424efaaa19bd8e813c5e6f6da46316e63761421b3e5f5c8ced9a36e6b6) action was migrated to Docker Container Action.
+
 ## Usage
 
 To use the action, add the following step to your GitHub Actions workflow:
