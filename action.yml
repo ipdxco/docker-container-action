@@ -1,5 +1,8 @@
 name: 'Docker Container Action'
 description: 'A reimplementation of docker container action'
+branding:
+  icon: 'award'
+  color: 'green'
 inputs:
   repository:
     description: 'The GitHub repository name'
