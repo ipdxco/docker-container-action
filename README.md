@@ -42,11 +42,21 @@ When the Docker Container Action runs, it first checks if the specified image ex
 This action is commonly used inside a composite action. For example, if the composite action is defined in the `github/example` repository, you could use the Docker Container Action in a step with the following syntax:
 
 ```yml
+- name: Update Action env variables
+  run: |
+    if [[ $GITHUB_ACTION_PATH == /home/runner/work/_actions/* ]]; then
+      echo "GITHUB_ACTION_REPOSITORY=$(jq -jn 'env.ACTION_PATH | split("/") | .[5:7] | join("/")')" >> $GITHUB_ENV
+      echo "GITHUB_ACTION_REF=$(jq -jn 'env.ACTION_PATH | split("/") | .[7:] | join("/")')" >> $GITHUB_ENV
+    else
+      echo "GITHUB_ACTION_REPOSITORY=$GITHUB_REPOSITORY" >> $GITHUB_ENV
+      echo "GITHUB_ACTION_REF=$GITHUB_SHA" >> $GITHUB_ENV
+    fi
+  shell: bash
 - name: Run Docker container
   uses: pl-strflt/docker-container-action@v1
   with:
-    repository: ${{ env.GITHUB_ACTION_REPOSITORY || github.repository }}
-    ref: ${{ env.GITHUB_ACTION_REF || github.sha }}
+    repository: ${{ env.GITHUB_ACTION_REPOSITORY }}
+    ref: ${{ env.GITHUB_ACTION_REF }}
     opts: --network=host
 ```
 
