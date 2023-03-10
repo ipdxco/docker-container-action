@@ -42,14 +42,15 @@ When the Docker Container Action runs, it first checks if the specified image ex
 This action is commonly used inside a composite action. For example, if the composite action is defined in the `github/example` repository, you could use the Docker Container Action in a step with the following syntax:
 
 ```yml
-- name: Update Action env variables
+# This step is required because GitHub Actions doesn't set GITHUB_ACTION_REPOSITORY nor GITHUB_ACTION_REF properly :(
+- id: action
   run: |
-    if [[ $GITHUB_ACTION_PATH == /home/runner/work/_actions/* ]]; then
-      echo "GITHUB_ACTION_REPOSITORY=$(jq -jn 'env.GITHUB_ACTION_PATH | split("/") | .[5:7] | join("/")')" >> $GITHUB_ENV
-      echo "GITHUB_ACTION_REF=$(jq -jn 'env.GITHUB_ACTION_PATH | split("/") | .[7:] | join("/")')" >> $GITHUB_ENV
+    if [[ $GITHUB_ACTION_PATH == */_actions/* ]]; then
+      echo "repository=$(echo ${GITHUB_ACTION_PATH#*/_actions/} | cut -d/ -f1-2)" >> $GITHUB_OUTPUT
+      echo "ref=$(echo ${GITHUB_ACTION_PATH#*/_actions/} | cut -d/ -f3)" >> $GITHUB_OUTPUT
     else
-      echo "GITHUB_ACTION_REPOSITORY=$GITHUB_REPOSITORY" >> $GITHUB_ENV
-      echo "GITHUB_ACTION_REF=$GITHUB_SHA" >> $GITHUB_ENV
+      echo "repository=$GITHUB_REPOSITORY" >> $GITHUB_OUTPUT
+      echo "ref=$GITHUB_SHA" >> $GITHUB_OUTPUT
     fi
   shell: bash
 - name: Run Docker container
