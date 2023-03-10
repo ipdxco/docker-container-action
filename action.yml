@@ -68,16 +68,6 @@ runs:
         DOCKER_REGISTRY_URL: ${{ inputs.docker-registry-url }}
         IMAGE: ${{ inputs.image || inputs.repository }}
         TAG: ${{ inputs.tag || inputs.ref }}
-        INPUT_REPOSITORY: ${{ inputs.repository }}
-        INPUT_REF: ${{ inputs.ref }}
-        INPUT_IMAGE: ${{ inputs.image }}
-        INPUT_TAG: ${{ inputs.tag }}
-        INPUT_DOCKERFILE: ${{ inputs.dockerfile }}
-        INPUT_OPTS: ${{ inputs.opts }}
-        INPUT_ARGS: ${{ inputs.args }}
-        INPUT_WORKING_DIRECTORY: ${{ inputs.working-directory }}
-        INPUT_GITHUB_SERVER_URL: ${{ inputs.github-server-url }}
-        INPUT_DOCKER_REGISTRY_URL: ${{ inputs.docker-registry-url }}
       run: docker run --workdir "${PWD/"$GITHUB_WORKSPACE"/"/github/workspace"}" --rm --env-file <(env | grep -E '^(ACTIONS|GITHUB|INPUT|RUNNER)_') -e HOME -e CI -v "/var/run/docker.sock":"/var/run/docker.sock" -v "/home/runner/work/_temp/_github_home":"/github/home" -v "/home/runner/work/_temp/_github_workflow":"/github/workflow" -v "/home/runner/work/_temp/_runner_file_commands":"/github/file_commands" -v "$GITHUB_WORKSPACE":"/github/workspace" ${{ inputs.opts }} "${DOCKER_REGISTRY_URL#http*://}/$IMAGE:$TAG" ${{ inputs.args }}
       working-directory: ${{ inputs.working-directory }}
       shell: bash

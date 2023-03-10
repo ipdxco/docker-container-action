@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 
+## [1.1.2] - 2023-03-10
+### Changed
+- Do not pass internal inputs to the docker run step
+
 ## [1.1.1] - 2023-03-05
 ### Added
 - Added `ref` input to accept the GitHub repository ref
