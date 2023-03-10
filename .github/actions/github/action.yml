@@ -1,0 +1,31 @@
+name: 'Docker Container Action'
+description: 'A reimplementation of docker container action'
+inputs:
+  github:
+    description: 'The GitHub context'
+    required: true
+    default: ${{ toJSON(github) }}
+outputs:
+  action_repository:
+    description: 'The GitHub action repository name'
+    value: ${{ steps.action.outputs.action_repository }}
+  action_ref:
+    description: 'The GitHub action repository ref'
+    value: ${{ steps.action.outputs.action_ref }}
+runs:
+  using: 'composite'
+  steps:
+    - id: action
+      env:
+        ACTION_PATH: ${{ fromJSON(inputs.github).action_path }}
+        REPOSITORY: ${{ fromJSON(inputs.github).repository }}
+        SHA: ${{ fromJSON(inputs.github).sha }}
+      run: |
+        if [[ $ACTION_PATH == */_actions/* ]]; then
+          echo "action_repository=$(echo ${ACTION_PATH#*/_actions/} | cut -d/ -f1-2)" >> $GITHUB_OUTPUT
+          echo "action_ref=$(echo ${ACTION_PATH#*/_actions/} | cut -d/ -f3)" >> $GITHUB_OUTPUT
+        else
+          echo "action_repository=$GITHUB_REPOSITORY" >> $GITHUB_OUTPUT
+          echo "action_ref=$GITHUB_SHA" >> $GITHUB_OUTPUT
+        fi
+      shell: bash
