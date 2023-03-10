@@ -45,8 +45,8 @@ This action is commonly used inside a composite action. For example, if the comp
 - name: Update Action env variables
   run: |
     if [[ $GITHUB_ACTION_PATH == /home/runner/work/_actions/* ]]; then
-      echo "GITHUB_ACTION_REPOSITORY=$(jq -jn 'env.ACTION_PATH | split("/") | .[5:7] | join("/")')" >> $GITHUB_ENV
-      echo "GITHUB_ACTION_REF=$(jq -jn 'env.ACTION_PATH | split("/") | .[7:] | join("/")')" >> $GITHUB_ENV
+      echo "GITHUB_ACTION_REPOSITORY=$(jq -jn 'env.GITHUB_ACTION_PATH | split("/") | .[5:7] | join("/")')" >> $GITHUB_ENV
+      echo "GITHUB_ACTION_REF=$(jq -jn 'env.GITHUB_ACTION_PATH | split("/") | .[7:] | join("/")')" >> $GITHUB_ENV
     else
       echo "GITHUB_ACTION_REPOSITORY=$GITHUB_REPOSITORY" >> $GITHUB_ENV
       echo "GITHUB_ACTION_REF=$GITHUB_SHA" >> $GITHUB_ENV
