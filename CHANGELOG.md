@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 
+## [1.1.4] - 2023-03-10
+### Fixed
+- Correctly validate if docker pull was successful
+
 ## [1.1.3] - 2023-03-10
 ### Added
 - Added `.github/actions/github` composite action to infer GitHub action repository and ref from GitHub action path

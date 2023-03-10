@@ -50,9 +50,9 @@ runs:
         IMAGE: ${{ inputs.image || inputs.repository }}
         TAG: ${{ inputs.tag || inputs.ref }}
         DOCKER_REGISTRY_URL: ${{ inputs.docker-registry-url }}
-      run: echo "exit=$(docker pull ${DOCKER_REGISTRY_URL#http*://}/$IMAGE:$TAG; echo $?)" >> $GITHUB_OUTPUT
+      run: echo "image=$(docker pull ${DOCKER_REGISTRY_URL#http*://}/$IMAGE:$TAG -q || true)" >> $GITHUB_OUTPUT
       shell: bash
-    - if: steps.pull.outputs.exit == 1
+    - if: steps.pull.outputs.image == ''
       env:
         REPOSITORY: ${{ inputs.repository }}
         REF: ${{ inputs.ref }}
