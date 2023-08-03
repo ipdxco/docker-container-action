@@ -26,6 +26,9 @@ inputs:
   args:
     description: 'The docker run args'
     required: false
+  build-args:
+    description: 'The docker build args'
+    required: false
   working-directory:
     description: 'The docker run working directory'
     required: false
