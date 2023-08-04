@@ -6,6 +6,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 
+## [1.1.6] - 2023-08-04
+### Added
+- Expose action_sha from the github action when running directly from the checkout
+
+### Fixed
+- Explicitly disable buildkit when building the docker image to allow referencing merge commits by SHA
+
 ## [1.1.5] - 2023-08-04
 ### Fixed
 - Return ref instead of sha when running .github/actions/github action directly from the checkout

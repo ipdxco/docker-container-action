@@ -12,6 +12,9 @@ outputs:
   action_ref:
     description: 'The GitHub action repository ref'
     value: ${{ steps.action.outputs.action_ref }}
+  action_sha:
+    description: 'The GitHub action repository sha'
+    value: ${{ steps.action.outputs.action_sha }}
 runs:
   using: 'composite'
   steps:
@@ -22,8 +25,10 @@ runs:
         if [[ $ACTION_PATH == */_actions/* ]]; then
           echo "action_repository=$(echo ${ACTION_PATH#*/_actions/} | cut -d/ -f1-2)" >> $GITHUB_OUTPUT
           echo "action_ref=$(echo ${ACTION_PATH#*/_actions/} | cut -d/ -f3)" >> $GITHUB_OUTPUT
+          echo "action_sha=" >> $GITHUB_OUTPUT
         else
           echo "action_repository=$GITHUB_REPOSITORY" >> $GITHUB_OUTPUT
           echo "action_ref=$GITHUB_REF" >> $GITHUB_OUTPUT
+          echo "action_sha=$GITHUB_SHA" >> $GITHUB_OUTPUT
         fi
       shell: bash
