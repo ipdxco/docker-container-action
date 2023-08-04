@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 
+## [1.1.5] - 2023-08-04
+### Fixed
+- Return ref instead of sha when running .github/actions/github action directly from the checkout
+
 ## [1.1.4] - 2023-03-10
 ### Fixed
 - Correctly validate if docker pull was successful

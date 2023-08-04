@@ -18,14 +18,12 @@ runs:
     - id: action
       env:
         ACTION_PATH: ${{ fromJSON(inputs.github).action_path }}
-        REPOSITORY: ${{ fromJSON(inputs.github).repository }}
-        SHA: ${{ fromJSON(inputs.github).sha }}
       run: |
         if [[ $ACTION_PATH == */_actions/* ]]; then
           echo "action_repository=$(echo ${ACTION_PATH#*/_actions/} | cut -d/ -f1-2)" >> $GITHUB_OUTPUT
           echo "action_ref=$(echo ${ACTION_PATH#*/_actions/} | cut -d/ -f3)" >> $GITHUB_OUTPUT
         else
           echo "action_repository=$GITHUB_REPOSITORY" >> $GITHUB_OUTPUT
-          echo "action_ref=$GITHUB_SHA" >> $GITHUB_OUTPUT
+          echo "action_ref=$GITHUB_REF" >> $GITHUB_OUTPUT
         fi
       shell: bash
