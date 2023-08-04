@@ -61,6 +61,7 @@ runs:
         DOCKERFILE: ${{ inputs.dockerfile }}
         GITHUB_SERVER_URL: ${{ inputs.github-server-url }}
         DOCKER_REGISTRY_URL: ${{ inputs.docker-registry-url }}
+        DOCKER_BUILDKIT: '0' # Using remote git context with buildkit does not support referencing merge commits via SHA
       run: docker build -t ${DOCKER_REGISTRY_URL#http*://}/$IMAGE:$TAG -f $DOCKERFILE $GITHUB_SERVER_URL/$REPOSITORY.git#$REF
       shell: bash
     - id: run
