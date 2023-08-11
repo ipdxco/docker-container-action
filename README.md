@@ -52,6 +52,9 @@ This action is commonly used inside a composite action. For example, if the comp
     repository: ${{ steps.github.outputs.action_repository }}
     ref: ${{ steps.github.outputs.action_ref }}
     opts: --network=host
+    build-args: |
+      CUSTOM_ARG_1=foo
+      CUSTOM_ARG_2=bar
 ```
 
 In this example, the composite action acts as a wrapper. When the step is executed, it first checks if the specified image exists. If it does not, it builds that image locally using the specified Dockerfile and git repository context. Finally, it runs the specified image with the custom options.

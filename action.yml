@@ -27,7 +27,7 @@ inputs:
     description: 'The docker run args'
     required: false
   build-args:
-    description: 'The docker build args'
+    description: 'The docker build args. Newline-delimited list.'
     required: false
   working-directory:
     description: 'The docker run working directory'
@@ -55,6 +55,17 @@ runs:
         DOCKER_REGISTRY_URL: ${{ inputs.docker-registry-url }}
       run: echo "image=$(docker pull ${DOCKER_REGISTRY_URL#http*://}/$IMAGE:$TAG -q || true)" >> $GITHUB_OUTPUT
       shell: bash
+    - id: transform-build-args
+      env:
+        BUILD_ARGS: ${{ inputs.build-args }}
+      run: |
+        build_args=""
+        IFS=$'\n'
+        for line in "${{ inputs.build-args }}"; do
+          build_args="$build_args --build-arg $line"
+        done
+        echo "build-args=$build_args" >> $GITHUB_OUTPUT
+      shell: bash
     - if: steps.pull.outputs.image == ''
       env:
         REPOSITORY: ${{ inputs.repository }}
@@ -65,7 +76,7 @@ runs:
         GITHUB_SERVER_URL: ${{ inputs.github-server-url }}
         DOCKER_REGISTRY_URL: ${{ inputs.docker-registry-url }}
         DOCKER_BUILDKIT: '0' # Using remote git context with buildkit does not support referencing merge commits via SHA
-        BUILD_ARGS: ${{ inputs.build-args }}
+        BUILD_ARGS: ${{ steps.transform-build-args.outputs.build-args }}
       run: docker build -t ${DOCKER_REGISTRY_URL#http*://}/$IMAGE:$TAG -f $DOCKERFILE ${BUILD_ARGS} $GITHUB_SERVER_URL/$REPOSITORY.git#$REF
       shell: bash
     - id: run
