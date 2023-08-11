@@ -27,7 +27,7 @@ To use the action, add the following step to your GitHub Actions workflow:
 * `dockerfile`: The Dockerfile path. Optional; defaults to `Dockerfile`.
 * `opts`: The Docker run options. Optional.
 * `args`: The Docker run args. Optional.
-* `build-args`: Additional Docker build args. Optional.
+* `build-args`: The Docker build args. Optional.
 * `working-directory`: The Docker run working directory. Optional; defaults to `${{ github.workspace }}`.
 * `github-server-url`: The GitHub server URL. Optional; defaults to `${{ github.server_url }}`.
 * `docker-registry-url`: The Docker registry URL. Optional; defaults to `https://ghcr.io`.
