@@ -59,13 +59,15 @@ runs:
         echo "image=$(docker pull ${IMAGE_TAG} -q || true)" >> $GITHUB_OUTPUT
       shell: bash
     - id: transform-build-args
+      # this steps reproduces the build-args used in https://github.com/docker/build-push-action#customizing
       env:
         BUILD_ARGS: ${{ inputs.build-args }}
       run: |
         build_args=""
         IFS=$'\n'
         for line in "${{ inputs.build-args }}"; do
-          build_args="$build_args --build-arg $line"
+          line_with_equals=${line/:/=}
+          build_args="$build_args --build-arg ${line_with_equals}"
         done
         echo "build-args=$build_args" >> $GITHUB_OUTPUT
       shell: bash
