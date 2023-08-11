@@ -53,7 +53,10 @@ runs:
         IMAGE: ${{ inputs.image || inputs.repository }}
         TAG: ${{ inputs.tag || inputs.ref }}
         DOCKER_REGISTRY_URL: ${{ inputs.docker-registry-url }}
-      run: echo "image=$(docker pull ${DOCKER_REGISTRY_URL#http*://}/$IMAGE:$TAG -q || true)" >> $GITHUB_OUTPUT
+      run: |
+        IMAGE_TAG="${DOCKER_REGISTRY_URL#http*://}/$IMAGE:$TAG"
+        echo "image-tag=${IMAGE_TAG}" >> $GITHUB_OUTPUT
+        echo "image=$(docker pull ${IMAGE_TAG} -q || true)" >> $GITHUB_OUTPUT
       shell: bash
     - id: transform-build-args
       env:
@@ -70,20 +73,18 @@ runs:
       env:
         REPOSITORY: ${{ inputs.repository }}
         REF: ${{ inputs.ref }}
-        IMAGE: ${{ inputs.image || inputs.repository }}
-        TAG: ${{ inputs.tag || inputs.ref }}
         DOCKERFILE: ${{ inputs.dockerfile }}
         GITHUB_SERVER_URL: ${{ inputs.github-server-url }}
         DOCKER_REGISTRY_URL: ${{ inputs.docker-registry-url }}
         DOCKER_BUILDKIT: '0' # Using remote git context with buildkit does not support referencing merge commits via SHA
         BUILD_ARGS: ${{ steps.transform-build-args.outputs.build-args }}
-      run: docker build -t ${DOCKER_REGISTRY_URL#http*://}/$IMAGE:$TAG -f $DOCKERFILE ${BUILD_ARGS} $GITHUB_SERVER_URL/$REPOSITORY.git#$REF
+        IMAGE_TAG: ${{ steps.pull.outputs.image-tag }}
+      run: docker build -t ${IMAGE_TAG} -f $DOCKERFILE ${BUILD_ARGS} $GITHUB_SERVER_URL/$REPOSITORY.git#$REF
       shell: bash
     - id: run
       env:
         DOCKER_REGISTRY_URL: ${{ inputs.docker-registry-url }}
-        IMAGE: ${{ inputs.image || inputs.repository }}
-        TAG: ${{ inputs.tag || inputs.ref }}
-      run: docker run --workdir "${PWD/"$GITHUB_WORKSPACE"/"/github/workspace"}" --rm --env-file <(env | grep -E '^(ACTIONS|GITHUB|INPUT|RUNNER)_') -e HOME -e CI -v "/var/run/docker.sock":"/var/run/docker.sock" -v "/home/runner/work/_temp/_github_home":"/github/home" -v "/home/runner/work/_temp/_github_workflow":"/github/workflow" -v "/home/runner/work/_temp/_runner_file_commands":"/github/file_commands" -v "$GITHUB_WORKSPACE":"/github/workspace" ${{ inputs.opts }} "${DOCKER_REGISTRY_URL#http*://}/$IMAGE:$TAG" ${{ inputs.args }}
+        IMAGE_TAG: ${{ steps.pull.outputs.image-tag }}
+      run: docker run --workdir "${PWD/"$GITHUB_WORKSPACE"/"/github/workspace"}" --rm --env-file <(env | grep -E '^(ACTIONS|GITHUB|INPUT|RUNNER)_') -e HOME -e CI -v "/var/run/docker.sock":"/var/run/docker.sock" -v "/home/runner/work/_temp/_github_home":"/github/home" -v "/home/runner/work/_temp/_github_workflow":"/github/workflow" -v "/home/runner/work/_temp/_runner_file_commands":"/github/file_commands" -v "$GITHUB_WORKSPACE":"/github/workspace" ${{ inputs.opts }} "${IMAGE_TAG}" ${{ inputs.args }}
       working-directory: ${{ inputs.working-directory }}
       shell: bash
