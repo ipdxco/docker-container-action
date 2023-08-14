@@ -64,11 +64,17 @@ runs:
         BUILD_ARGS: ${{ inputs.build-args }}
       run: |
         build_args=""
-        IFS=$'\n'
-        for line in "${{ inputs.build-args }}"; do
+        while IFS= read -r line; do
           line_with_equals=${line/:/=}
+
+          # skip empty lines (which happens with `<<<`)
+          if [[ -z "$line" ]]; then
+            continue
+          fi
+
           build_args="$build_args --build-arg ${line_with_equals}"
-        done
+        done <<< "${BUILD_ARGS}"
+
         echo "build-args=$build_args" >> $GITHUB_OUTPUT
       shell: bash
     - if: steps.pull.outputs.image == ''
