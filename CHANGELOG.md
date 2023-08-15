@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 
+## [1.1.7] - 2023-08-04
+### Added
+- Add `build-args` parameter used when building the docker image
+
 ## [1.1.6] - 2023-08-04
 ### Added
 - Expose action_sha from the github action when running directly from the checkout
