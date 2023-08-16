@@ -20,10 +20,10 @@ jobs:
       - name: build the container and run it
         id: run
         # todo: fix this path
-        uses: pl-strflt/docker-container-action@main
+        uses: ./.
         with:
           repository: ${{ github.repository }}
-          ref: ${{ github.ref }}
+          ref: ${{ github.sha }}
           dockerfile: tests/Dockerfile.test-build-args
           build-args: |
             ARG_1:hello
