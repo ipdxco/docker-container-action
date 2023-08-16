@@ -10,7 +10,7 @@ jobs:
       - uses: actions/checkout@v3
       - id: github
         # todo: fix this path
-        uses: pl-strflt/docker-container-action/.github/actions/github@main
+        uses: ./.github/actions/github
       - id: debug
         run: |
           echo "GITHUB OUTPUT: $GITHUB_OUTPUT"
@@ -22,10 +22,9 @@ jobs:
         # todo: fix this path
         uses: pl-strflt/docker-container-action@main
         with:
-          repository: ${{ steps.github.outputs.action_repository }}
-          ref: ${{ steps.github.outputs.action_sha || steps.github.outputs.action_ref }}
-          dockerfile: tests/test-build-args.Dockerfile
-          args: --arg1 --arg2 --arg3
+          repository: ${{ github.repository }}
+          ref: ${{ github.ref }}
+          dockerfile: tests/Dockerfile.test-build-args
           build-args: |
             ARG_1:hello
             ARG_2:foo
@@ -33,10 +32,10 @@ jobs:
           opts: --volume ${GITHUB_OUPUT}:/output
       - name: check the output
         env:
-          OUTPUTS: ${{ steps.run.outputs.outputs }}
-          # ARG_1: ${{ steps.run.outputs.outputs.arg-1 }}
-          # ARG_2: ${{ steps.run.outputs.outputs.arg-2 }}
-          # ARG_3: ${{ steps.run.outputs.outputs.arg-3 }}
+          OUTPUTS: ${{ toJSON(steps.run.outputs) }}
+          ARG_1: ${{ steps.run.outputs.arg-1 }}
+          ARG_2: ${{ steps.run.outputs.arg-2 }}
+          ARG_3: ${{ steps.run.outputs.arg-3 }}
         run: |
           echo ${OUTPUTS}
 
