@@ -1,6 +1,8 @@
 name: Test
 on:
   push:
+    branches:
+      - main
   pull_request:
 jobs:
   test-build-args:
@@ -20,7 +22,7 @@ jobs:
       - name: build the container and run it
         id: run
         # todo: fix this path
-        uses: ./.
+        uses: ./
         with:
           repository: ${{ github.repository }}
           ref: ${{ github.sha }}
