@@ -6,8 +6,8 @@ ARG ARG_2=default_2
 ARG ARG_3=default_3
 
 RUN echo "#!/bin/sh" > /script.sh
-RUN echo 'GITHUB_FILE_COMMANDS="$(dirname "$GITHUB_OUTPUT")" >> /script.sh
-RUN echo 'OUTPUT="${GITHUB_OUTPUT/"$FILE_COMMANDS"/"/github/file_commands"}"' >> /script.sh
+RUN echo 'GITHUB_FILE_COMMANDS="$(dirname "$GITHUB_OUTPUT")"' >> /script.sh
+RUN echo 'OUTPUT="${GITHUB_OUTPUT/"$GITHUB_FILE_COMMANDS"/"/github/file_commands"}"' >> /script.sh
 RUN echo "echo \"arg-1=$ARG_1\" | tee \$OUTPUT" >> /script.sh
 RUN echo "echo \"arg-2=$ARG_2\" | tee \$OUTPUT" >> /script.sh
 RUN echo "echo \"arg-3=$ARG_3\" | tee \$OUTPUT" >> /script.sh
