@@ -18,7 +18,7 @@ jobs:
           echo "GITHUB OUTPUT: $GITHUB_OUTPUT"
           echo "PWD: $PWD"
           echo `ls -la`
-          cat tests/test-build-args.Dockerfile
+          cat tests/Dockerfile.test-build-args
       - name: build the container and run it
         id: run
         # todo: fix this path
