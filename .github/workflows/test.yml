@@ -10,15 +10,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - id: github
-        # todo: fix this path
-        uses: ./.github/actions/github
-      - id: debug
-        run: |
-          echo "GITHUB OUTPUT: $GITHUB_OUTPUT"
-          echo "PWD: $PWD"
-          echo `ls -la`
-          cat tests/Dockerfile.test-build-args
       - name: build the container and run it
         id: run
         # todo: fix this path
@@ -31,13 +22,12 @@ jobs:
             ARG_1:hello
             ARG_2:foo
             ARG_3:world
-          opts: --volume ${GITHUB_OUPUT}:/output
       - name: check the output
         env:
-          OUTPUTS: ${{ toJSON(steps.run.outputs) }}
-          ARG_1: ${{ steps.run.outputs.arg-1 }}
-          ARG_2: ${{ steps.run.outputs.arg-2 }}
-          ARG_3: ${{ steps.run.outputs.arg-3 }}
+          OUTPUTS: ${{steps.run.outputs.outputs }}
+          ARG_1: ${{ fromJSON(steps.run.outputs.outputs).arg-1 }}
+          ARG_2: ${{ fromJSON(steps.run.outputs.outputs).arg-2 }}
+          ARG_3: ${{ fromJSON(steps.run.outputs.outputs).arg-3 }}
         run: |
           echo ${OUTPUTS}
 
