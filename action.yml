@@ -41,6 +41,11 @@ inputs:
     description: 'The docker registry URL'
     required: false
     default: 'https://ghcr.io'
+  allow-exit-codes:
+    description: 'A comma separated list of exit code allowed when running the container. Use * to allow all exit codes'
+    # see https://github.com/orgs/community/discussions/15452 for context.
+    required: false
+    default: '0'
 outputs:
   outputs:
     description: 'The outputs of the docker run step in JSON format'
@@ -93,6 +98,34 @@ runs:
       env:
         DOCKER_REGISTRY_URL: ${{ inputs.docker-registry-url }}
         IMAGE_TAG: ${{ steps.pull.outputs.image-tag }}
-      run: docker run --workdir "${PWD/"$GITHUB_WORKSPACE"/"/github/workspace"}" --rm --env-file <(env | grep -E '^(ACTIONS|GITHUB|INPUT|RUNNER)_') -e HOME -e CI -v "/var/run/docker.sock":"/var/run/docker.sock" -v "/home/runner/work/_temp/_github_home":"/github/home" -v "/home/runner/work/_temp/_github_workflow":"/github/workflow" -v "/home/runner/work/_temp/_runner_file_commands":"/github/file_commands" -v "$GITHUB_WORKSPACE":"/github/workspace" ${{ inputs.opts }} "${IMAGE_TAG}" ${{ inputs.args }}
+        ALLOW_EXIT_CODES: ${{ inputs.allow-exit-codes }}
+      run: |
+        set +e
+        set +o pipefail
+
+        ALLOW_ALL=$(echo "$ALLOW_EXIT_CODES" | grep -q "\*"; echo $?)
+        EXIT_CODES=(${ALLOW_EXIT_CODES//,/ })
+
+        function docker_run() {
+          docker run --workdir "${PWD/"$GITHUB_WORKSPACE"/"/github/workspace"}" --rm --env-file <(env | grep -E '^(ACTIONS|GITHUB|INPUT|RUNNER)_') -e HOME -e CI -v "/var/run/docker.sock":"/var/run/docker.sock" -v "/home/runner/work/_temp/_github_home":"/github/home" -v "/home/runner/work/_temp/_github_workflow":"/github/workflow" -v "/home/runner/work/_temp/_runner_file_commands":"/github/file_commands" -v "$GITHUB_WORKSPACE":"/github/workspace" ${{ inputs.opts }} "${IMAGE_TAG}" ${{ inputs.args }}
+          return $?
+        }
+
+        docker_run
+        EXIT_CODE=$?
+
+        if [[ $ALLOW_ALL -eq 0 ]]; then
+          echo "Allowing exit code $EXIT_CODE"
+          exit 0
+        fi
+
+        for ALLOWED_EXIT_CODE in "${EXIT_CODES[@]}"; do
+          if [[ "$EXIT_CODE" -eq "$ALLOWED_EXIT_CODE" ]]; then
+            echo "Allowing exit code $EXIT_CODE"
+            exit 0
+          fi
+        done
+
+        exit $EXIT_CODE
       working-directory: ${{ inputs.working-directory }}
       shell: bash

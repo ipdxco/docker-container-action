@@ -6,7 +6,7 @@ on:
   pull_request:
 jobs:
   test-build-args:
-    name: Test
+    name: Test Build Args
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -46,3 +46,19 @@ jobs:
           fi
 
           echo "all good"
+  test-failure:
+    name: Test Allow Exit Codes
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        allow-exit-codes: ["0,42,1", "0,5,6,1,42", "0,*", "42", "*"]
+    steps:
+      - uses: actions/checkout@v3
+      - name: build the container and run it
+        id: run
+        uses: ./
+        with:
+          repository: ${{ github.repository }}
+          ref: ${{ github.sha }}
+          dockerfile: tests/Dockerfile.test-failure
+          allow-exit-codes: ${{ matrix.allow-exit-codes }}
