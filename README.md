@@ -28,6 +28,7 @@ To use the action, add the following step to your GitHub Actions workflow:
 * `opts`: The Docker run options. Optional.
 * `args`: The Docker run args. Optional.
 * `build-args`: The Docker build args. Optional.
+* `allow-exit-codes`: A comma separated list of exit code allowed when running the container. Use * to allow all exit codes
 * `working-directory`: The Docker run working directory. Optional; defaults to `${{ github.workspace }}`.
 * `github-server-url`: The GitHub server URL. Optional; defaults to `${{ github.server_url }}`.
 * `docker-registry-url`: The Docker registry URL. Optional; defaults to `https://ghcr.io`.

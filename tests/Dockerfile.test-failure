@@ -1,0 +1,9 @@
+# a simple container that takes 3 args and generate a shell script that prints them
+FROM alpine:3.12.0
+
+RUN echo "#!/bin/sh" > /script.sh
+RUN echo "exit 42" >> /script.sh
+
+RUN chmod +x /script.sh
+
+ENTRYPOINT ["/script.sh"]
