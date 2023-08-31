@@ -1,0 +1,48 @@
+name: Test
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+jobs:
+  test-build-args:
+    name: Test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: build the container and run it
+        id: run
+        uses: ./
+        with:
+          repository: ${{ github.repository }}
+          ref: ${{ github.sha }}
+          dockerfile: tests/Dockerfile.test-build-args
+          build-args: |
+            ARG_1:hello
+            ARG_2:foo
+            ARG_3:world
+      - name: check the output
+        env:
+          OUTPUTS: ${{steps.run.outputs.outputs }}
+          ARG_1: ${{ fromJSON(steps.run.outputs.outputs).arg-1 }}
+          ARG_2: ${{ fromJSON(steps.run.outputs.outputs).arg-2 }}
+          ARG_3: ${{ fromJSON(steps.run.outputs.outputs).arg-3 }}
+        run: |
+          echo ${OUTPUTS}
+
+          if [[ "$ARG_1" != "hello" ]]; then
+            echo "ARG_1 is not hello"
+            exit 1
+          fi
+
+          if [[ "$ARG_2" != "foo" ]]; then
+            echo "ARG_2 is not foo"
+            exit 1
+          fi
+
+          if [[ "$ARG_3" != "world" ]]; then
+            echo "ARG_3 is not world"
+            exit 1
+          fi
+
+          echo "all good"
